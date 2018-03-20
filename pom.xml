@@ -1,269 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>hr.mferlan.example</groupId>
-	<artifactId>wildfly-swarm-hibernate</artifactId>
-	<name>WildFly Swarm Example with Custom Hibernate version</name>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>war</packaging>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>hr.mferlan.example</groupId>
+  <artifactId>wildfly-swarm-hibernate</artifactId>
+  <name>WildFly Swarm Example with Custom Hibernate version</name>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>war</packaging>
 
-	<properties>
-		<version.wildfly.swarm>2018.3.3</version.wildfly.swarm>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<failOnMissingWebXml>false</failOnMissingWebXml>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.truezip.maven.plugin>1.2</version.truezip.maven.plugin>
+  <properties>
+    <version.wildfly.swarm>2018.3.3</version.wildfly.swarm>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <failOnMissingWebXml>false</failOnMissingWebXml>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	
+	<version.hibernate>5.3.0.CR1</version.hibernate>
+    <version.h2>1.4.187</version.h2>
+    <version.postgresql>42.1.4</version.postgresql>
+    <version.mysql>5.1.38</version.mysql>
+  </properties>
 
-		<version.h2>1.4.187</version.h2>
-		<version.postgresql>42.1.4</version.postgresql>
-		<version.mysql>5.1.38</version.mysql>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.wildfly.swarm</groupId>
+        <artifactId>bom-all</artifactId>
+        <version>${version.wildfly.swarm}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-		<version.byte.buddy>1.6.14</version.byte.buddy>
-		<version.jpa>2.2</version.jpa>
-		<version.hibernate>5.3.0.CR1</version.hibernate>
+  <build>
+    <finalName>wildfly-hibernate-example</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.swarm</groupId>
+                <artifactId>wildfly-swarm-plugin</artifactId>
+                <version>${version.wildfly.swarm}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-	</properties>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>						
+                                <artifactItem>
+                                    <groupId>org.hibernate</groupId>
+                                    <artifactId>hibernate-orm-modules</artifactId>
+                                    <version>${version.hibernate}</version>
+                                    <classifier>wildfly-11-dist</classifier>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}/modules</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>	
+    </plugins>
+  </build>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.wildfly.swarm</groupId>
-				<artifactId>bom-all</artifactId>
-				<version>${version.wildfly.swarm}</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+  <dependencies>
+    <!-- Java EE 7 dependency -->
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>7.0</version>
+      <scope>provided</scope>
+    </dependency>
 
-	<build>
-		<finalName>wildfly-hibernate-example</finalName>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
-		<plugins>
-			<plugin>
-				<groupId>org.wildfly.swarm</groupId>
-				<artifactId>wildfly-swarm-plugin</artifactId>
-				<version>${version.wildfly.swarm}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>package</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- <plugin> -->
-			<!-- <artifactId>maven-dependency-plugin</artifactId> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <id>unpack</id> -->
-			<!-- <phase>generate-resources</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>unpack</goal> -->
-			<!-- </goals> -->
-			<!-- <configuration> -->
-			<!-- <artifactItems> -->
-			<!-- <artifactItem> -->
-			<!-- <groupId>org.hibernate</groupId> -->
-			<!-- <artifactId>hibernate-orm-modules</artifactId> -->
-			<!-- <version>${version.hibernate}</version> -->
-			<!-- <classifier>wildfly-11-dist</classifier> -->
-			<!-- <type>zip</type> -->
-			<!-- <overWrite>false</overWrite> -->
-			<!-- <outputDirectory>${project.build.outputDirectory}/modules</outputDirectory> -->
-			<!-- </artifactItem> -->
-			<!-- </artifactItems> -->
-			<!-- </configuration> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
-			<!-- HIBERNATE PATCHING -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>truezip-maven-plugin</artifactId>
-				<version>${version.truezip.maven.plugin}</version>
-				<executions>
-					<execution>
-						<id>Unpack connector-${version.wildfly.swarm}.jar from ${project.build.finalName}-swarm.jar for patching hibernate
-						</id>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<filesets>
-								<fileset>
-									<directory>
-										${project.build.directory}/${project.build.finalName}-swarm.jar/m2repo/org/wildfly/swarm/connector/${version.wildfly.swarm}/connector-${version.wildfly.swarm}.jar
-									</directory>
-									<outputDirectory>
-										${project.build.directory}/connector-${version.wildfly.swarm}/connector-${version.wildfly.swarm}.jar
-									</outputDirectory>
-								</fileset>
-							</filesets>
-						</configuration>
-					</execution>
-					<execution>
-						<id>Replace hibernate module.xml and jpa module.xml in connector-${version.wildfly.swarm}.jar
-						</id>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<filesets>
-								<fileset>
-									<directory>${project.parent.basedir}/hibernate-patch/modules/org.hibernate.main</directory>
-									<outputDirectory>
-										${project.build.directory}/connector-${version.wildfly.swarm}/connector-${version.wildfly.swarm}.jar/modules/org/hibernate/main
-									</outputDirectory>
-								</fileset>
-								<fileset>
-									<directory>${project.parent.basedir}/hibernate-patch/modules/javax.persistence.api.main
-									</directory>
-									<outputDirectory>
-										${project.build.directory}/connector-${version.wildfly.swarm}/connector-${version.wildfly.swarm}.jar/modules/javax/persistence/api/main
-									</outputDirectory>
-								</fileset>
-							</filesets>
-						</configuration>
-					</execution>
-					<execution>
-						<id>Copy patched connector-${version.wildfly.swarm}.jar back to	${project.build.finalName}-swarm.jar
-						</id>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<filesets>
-								<fileset>
-									<directory>
-										${project.build.directory}/connector-${version.wildfly.swarm}/connector-${version.wildfly.swarm}.jar
-									</directory>
-									<outputDirectory>
-										${project.build.directory}/${project.build.finalName}-swarm.jar/m2repo/org/wildfly/swarm/connector/${version.wildfly.swarm}/connector-${version.wildfly.swarm}.jar
-									</outputDirectory>
-								</fileset>
-							</filesets>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-
-	<dependencies>
-		<!-- Java EE 7 dependency -->
-		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-api</artifactId>
-			<version>7.0</version>
-			<scope>provided</scope>
-		</dependency>
-
-
-		<!-- Patching wildfly-swarm hibernate -->
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-			<version>${version.hibernate}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-envers</artifactId>
-			<version>${version.hibernate}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>${version.byte.buddy}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+	<dependency>
+		<groupId>javax.persistence</groupId>
+		<artifactId>javax.persistence-api</artifactId>
+		<version>2.2</version>
+	</dependency>
+   <!-- Jdbc drivers -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${version.h2}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${version.postgresql}</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${version.mysql}</version>
+        </dependency>	
+		
+  <!--Test-->
+        <dependency>
+            <groupId>org.wildfly.swarm</groupId>
+            <artifactId>arquillian</artifactId>
+            <scope>test</scope>
+        </dependency>	
 
 		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>javax.persistence-api</artifactId>
-			<version>${version.jpa}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<!-- Jdbc drivers -->
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>${version.h2}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>${version.postgresql}</version>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${version.mysql}</version>
-		</dependency>
-
-		<!--Test -->
-		<dependency>
-			<groupId>org.wildfly.swarm</groupId>
-			<artifactId>arquillian</artifactId>
+    <groupId>org.jboss.arquillian.extension</groupId>
+    <artifactId>arquillian-transaction-jta</artifactId>
+    <version>1.0.5</version>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.arquillian.extension</groupId>
-			<artifactId>arquillian-transaction-jta</artifactId>
-			<version>1.0.5</version>
-			<scope>test</scope>
-		</dependency>
+</dependency>
 
 
-		<dependency>
-			<groupId>org.jboss.arquillian.extension</groupId>
-			<artifactId>arquillian-transaction-api</artifactId>
-			<version>1.0.5</version>
-			<scope>test</scope>
-		</dependency>
+	<dependency>
+		<groupId>org.jboss.arquillian.extension</groupId>
+		<artifactId>arquillian-transaction-api</artifactId>
+		<version>1.0.5</version>
+		<scope>test</scope>
+	</dependency>
+		
+	<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>${version.hibernate}</version>
+	<scope>test</scope>
+</dependency>
 
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-			<version>${version.hibernate}</version>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
-
-
+  </dependencies>
+  
+  
 </project>
